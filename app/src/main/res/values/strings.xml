@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">GlyphHelper</string>
+    <string name="title_activity_main">GlyphHelper Setting</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="notification_title_open">GlyphHelper is showed</string>
+    <string name="notification_title_close">GlyphHelper is hided</string>
+    <string name="click_to_setting">click to enter setting</string>
+    <string name="hide_helper">Hide</string>
+    <string name="show_helper">Show</string>
+
+    <string name="setting_status">Service status</string>
+    <string name="service_enable">Service is enabled, the icon will be showed in the game
+        automatically, you can do click to take screenshots and long click to clear.\n\nIf you
+        want to reset the setting, long click this text.</string>
+    <string name="service_disable">Service is disable and the helper will do nothing,
+        click to open service in system setting and open the GlyphHelper. If it is enabled,
+        disable it and enable again.</string>
+    <string name="setting_reset">Setting is reset, enjoy yourself.</string>
+
+    <string name="setting_icon_position">Icon position</string>
+    <string name="setting_icon_top_offset">Offset to the top:</string>
+    <string name="setting_icon_right_offset">Offset to the right:</string>
+    <string name="dp">" dp"</string>
+
+    <string name="setting_screenshot">ScreenShot setting</string>
+    <string name="setting_screenshot_top_offset">Offset to the top:</string>
+    <string name="setting_screenshot_right_offset">Offset to the right:</string>
+
+    <string name="setting_screenshot_size">ScreenShot size:</string>
+</resources>

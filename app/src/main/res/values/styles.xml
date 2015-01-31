@@ -1,0 +1,15 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/primary_color</item>
+        <item name="colorPrimaryDark">@color/primary_dark_color</item>
+    </style>
+
+    <color name="primary_color">#3F51B5</color>
+    <color name="primary_dark_color">#303F9F</color>
+    <color name="setting_group_title_text_color">@color/primary_color</color>
+    <color name="setting_item_bg">@color/background_material_light</color>
+    <color name="setting_item_pressed">#9E9E9E</color>
+    <color name="disable_overlay_color">#80EEEEEE</color>
+</resources>

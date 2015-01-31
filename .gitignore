@@ -1,0 +1,8 @@
+.gradle/
+app/build/
+build/
+app/app.iml
+.idea/
+local.properties
+GlyphHelperTemp.iml
+gradle.properties
