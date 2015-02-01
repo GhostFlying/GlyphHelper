@@ -9,6 +9,6 @@
 
     <dimen name="setting_keyline1">20dp</dimen>
     <dimen name="setting_item_margin_vertical">20dp</dimen>
-    <dimen name="setting_icon_offset_value_width">20dp</dimen>
+    <dimen name="setting_icon_offset_value_width">30dp</dimen>
     <dimen name="setting_item_separator_margin_horizon">10dp</dimen>
 </resources>

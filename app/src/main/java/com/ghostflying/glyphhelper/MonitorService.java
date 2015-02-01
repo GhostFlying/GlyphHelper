@@ -16,6 +16,7 @@ import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -28,6 +29,7 @@ import java.io.BufferedInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayDeque;
+import java.util.Date;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 
@@ -38,6 +40,7 @@ public class MonitorService extends AccessibilityService {
     public static final String SETTING_SCREEN_SHOT_TOP_OFFSET_NAME = "screenShotTopOffset";
     public static final String SETTING_SCREEN_SHOT_RIGHT_OFFSET_NAME = "screenShotRightOffset";
     public static final String SETTING_SCREEN_SHOT_SIZE_NAME = "screenShotSize";
+    public static final String SETTING_SCREEN_SHOT_INTERVAL = "screenShotInterval";
     public static final String INGRESS_PACKAGE_NAME = "com.nianticproject.ingress";
 
     public static final int DEFAULT_ICON_TOP_OFFSET = 10;
@@ -45,15 +48,19 @@ public class MonitorService extends AccessibilityService {
     public static final int DEFAULT_SCREEN_SHOT_TOP_OFFSET = 10;
     public static final int DEFAULT_SCREEN_SHOT_RIGHT_OFFSET = 110;
     public static final int DEFAULT_SCREEN_SHOT_SIZE = 50;
+    public static final int DEFAULT_SCREEN_SHOT_INTERVAL = 1200;
 
-    private static final String SETTING_IS_SHOW = "isShpw";
+    private static final String SETTING_IS_SHOW = "isShow";
+    private static final String SETTING_AUTO_SCREEN_SHOT = "autoScreenShot";
     private static final boolean DEFAULT_IS_SHOW = true;
+    private static final boolean DEFAULT_AUTO_SCREEN_SHOT = false;
 
     private static final int GLYPH_TIMEOUT_IN_MILLISECONDS = 30000;
     private static final int SCREEN_SHOT_VIBRATE_TIME_IN_MILLISECONDS = 300;
     private static final String SYSTEM_UI_PACKAGE_NAME = "com.android.systemui";
     private static final String ACTION_CLOSE = "hideHelper";
     private static final String ACTION_OPEN = "showHelper";
+    private static final String ACTION_TOGGLE_AUTO = "toggleAutoScreenShot";
 
     private static MonitorService instance;
 
@@ -69,11 +76,14 @@ public class MonitorService extends AccessibilityService {
     private BroadcastReceiver mActionReceiver;
     private String lastPkg;
     private boolean mIsShow;
+    private boolean mAutoScreenShot;
     private int iconTopOffset;
     private int iconRightOffset;
     private int screenShotTopOffset;
     private int screenShotRightOffset;
     private int screenShotSize;
+    private int captureCount;
+    private int screenShotInterval;
     private DisplayMetrics mDisplayMetrics;
     private Queue<AsyncTask> mRunningTasks;
     private final Object mLock = new Object();
@@ -116,6 +126,10 @@ public class MonitorService extends AccessibilityService {
         return mIsShow;
     }
 
+    private boolean isAutoScreenShot(){
+        return mAutoScreenShot;
+    }
+
     private void showNotification(){
         NotificationCompat.Builder mBuild = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.ic_warning)
@@ -138,8 +152,12 @@ public class MonitorService extends AccessibilityService {
                 public void onReceive(Context context, Intent intent) {
                     if (intent.getAction().equals(ACTION_CLOSE)) {
                         hideHelper();
-                    } else if (intent.getAction().equals(ACTION_OPEN)) {
+                    }
+                    else if (intent.getAction().equals(ACTION_OPEN)) {
                         showHelper();
+                    }
+                    else if(intent.getAction().equals(ACTION_TOGGLE_AUTO)){
+                        mAutoScreenShot = !mAutoScreenShot;
                     }
                     showNotification();
                 }
@@ -147,6 +165,7 @@ public class MonitorService extends AccessibilityService {
             IntentFilter filter = new IntentFilter();
             filter.addAction(ACTION_CLOSE);
             filter.addAction(ACTION_OPEN);
+            filter.addAction(ACTION_TOGGLE_AUTO);
             registerReceiver(mActionReceiver, filter);
         }
         // set by setting
@@ -161,9 +180,23 @@ public class MonitorService extends AccessibilityService {
             mBuild.addAction(
                     R.drawable.ic_check,
                     getString(R.string.show_helper),
-                    PendingIntent.getBroadcast(this, 2, new Intent(ACTION_OPEN), 0)
+                    PendingIntent.getBroadcast(this, 1, new Intent(ACTION_OPEN), 0)
             );
             mBuild.setContentTitle(getString(R.string.notification_title_close));
+        }
+        if (isAutoScreenShot()){
+            mBuild.addAction(
+                    R.drawable.ic_alarm_off,
+                    getString(R.string.disable_auto_screenshot),
+                    PendingIntent.getBroadcast(this, 2, new Intent(ACTION_TOGGLE_AUTO), 0)
+            );
+        }
+        else {
+            mBuild.addAction(
+                    R.drawable.ic_alarm_on,
+                    getString(R.string.enable_auto_screenshot),
+                    PendingIntent.getBroadcast(this, 2 ,new Intent(ACTION_TOGGLE_AUTO), 0)
+            );
         }
         mNotificationManager.notify(0, mBuild.build());
     }
@@ -198,6 +231,7 @@ public class MonitorService extends AccessibilityService {
         mDisplayMetrics = getResources().getDisplayMetrics();
 
         mIsShow = mSettings.getBoolean(SETTING_IS_SHOW, DEFAULT_IS_SHOW);
+        mAutoScreenShot = mSettings.getBoolean(SETTING_AUTO_SCREEN_SHOT, DEFAULT_AUTO_SCREEN_SHOT);
         loadSettings();
         instance = this;
     }
@@ -208,6 +242,7 @@ public class MonitorService extends AccessibilityService {
         screenShotTopOffset = dpToPx( mSettings.getInt(SETTING_SCREEN_SHOT_TOP_OFFSET_NAME, DEFAULT_SCREEN_SHOT_TOP_OFFSET));
         screenShotRightOffset = dpToPx(mSettings.getInt(SETTING_SCREEN_SHOT_RIGHT_OFFSET_NAME, DEFAULT_SCREEN_SHOT_RIGHT_OFFSET));
         screenShotSize = dpToPx(mSettings.getInt(SETTING_SCREEN_SHOT_SIZE_NAME, DEFAULT_SCREEN_SHOT_SIZE));
+        screenShotInterval = mSettings.getInt(SETTING_SCREEN_SHOT_INTERVAL, DEFAULT_SCREEN_SHOT_INTERVAL);
     }
 
     private int dpToPx(int dp){
@@ -227,10 +262,11 @@ public class MonitorService extends AccessibilityService {
             mWindowManager.updateViewLayout(mButton, mButtonParams);
         }
     }
-    public void updateScreenShotsSetting(int topOffset, int rightOffset, int size){
+    public void updateScreenShotsSetting(int topOffset, int rightOffset, int size, int interval){
         screenShotTopOffset = dpToPx(topOffset);
         screenShotRightOffset = dpToPx(rightOffset);
         screenShotSize = dpToPx(size);
+        screenShotInterval = interval;
         if (mScreenShotsContainer != null){
             mScreenShotsContainerParams.x = screenShotRightOffset;
             mScreenShotsContainerParams.y = screenShotTopOffset;
@@ -250,11 +286,23 @@ public class MonitorService extends AccessibilityService {
         }
     };
 
+    private Runnable captureRunnable = new Runnable() {
+        @Override
+        public void run() {
+            new CaptureTask().execute();
+            captureCount--;
+            if (mButton != null && captureCount > 0){
+                mButton.postDelayed(captureRunnable, screenShotInterval);
+            }
+        }
+    };
+
     private void removeScreenShots() {
         if (mScreenShotsContainer != null){
             existScreenShots.clear();
             mWindowManager.removeView(mScreenShotsContainer);
             mScreenShotsContainer = null;
+            captureCount = 0;
         }
     }
 
@@ -282,8 +330,13 @@ public class MonitorService extends AccessibilityService {
             mButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    Log.d("sss", Long.toString(new Date().getTime()));
                     mVibrator.vibrate(SCREEN_SHOT_VIBRATE_TIME_IN_MILLISECONDS);
                     new CaptureTask().execute();
+                    if (isAutoScreenShot() && captureCount == 0){
+                        captureCount = 4;
+                        v.postDelayed(captureRunnable, screenShotInterval);
+                    }
                 }
             });
             mButton.setOnLongClickListener(new View.OnLongClickListener() {
@@ -291,6 +344,7 @@ public class MonitorService extends AccessibilityService {
                 public boolean onLongClick(View v) {
                     if (!existScreenShots.isEmpty()) {
                         removeScreenShots();
+                        v.removeCallbacks(timeOutRunnable);
                         return true;
                     }
                     return false;
@@ -321,6 +375,7 @@ public class MonitorService extends AccessibilityService {
         super.onDestroy();
         mSettings.edit()
                 .putBoolean(SETTING_IS_SHOW, mIsShow)
+                .putBoolean(SETTING_AUTO_SCREEN_SHOT, mAutoScreenShot)
                 .apply();
         removeButton();
         removeScreenShots();

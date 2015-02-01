@@ -10,6 +10,8 @@
     <string name="click_to_setting">click to enter setting</string>
     <string name="hide_helper">Hide</string>
     <string name="show_helper">Show</string>
+    <string name="enable_auto_screenshot">Auto shot</string>
+    <string name="disable_auto_screenshot">manual shot</string>
 
     <string name="setting_status">Service status</string>
     <string name="service_enable">Service is enabled, the icon will be showed in the game
@@ -30,4 +32,8 @@
     <string name="setting_screenshot_right_offset">Offset to the right:</string>
 
     <string name="setting_screenshot_size">ScreenShot size:</string>
+
+    <string name="setting_function">Function options</string>
+    <string name="setting_auto_screenshot_interval">Interval between two shots</string>
+    <string name="ms">ms</string>
 </resources>

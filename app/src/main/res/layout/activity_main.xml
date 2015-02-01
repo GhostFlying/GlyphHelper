@@ -42,6 +42,8 @@
 
                     <include layout="@layout/setting_screenshot"/>
 
+                    <include layout="@layout/setting_function"/>
+
                 </LinearLayout>
 
                 <View

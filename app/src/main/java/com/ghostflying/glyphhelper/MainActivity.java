@@ -34,6 +34,8 @@ public class MainActivity extends ActionBarActivity {
     @InjectView(R.id.screenshot_right_offset_value) TextView mScreenShotRightOffsetValue;
     @InjectView(R.id.screenshot_size) SeekBar mScreenShotSize;
     @InjectView(R.id.screenshot_size_value) TextView mScreenShotSizeValue;
+    @InjectView(R.id.screenshot_interval) SeekBar mScreenShotInterval;
+    @InjectView(R.id.screenshot_interval_value) TextView mScreenShotIntervalValue;
     @InjectView(R.id.disable_overlay) View mDisableOverlay;
 
     private SharedPreferences mSetting;
@@ -43,8 +45,7 @@ public class MainActivity extends ActionBarActivity {
     private int screenShotTopOffset;
     private int screenShotRightOffset;
     private int screenShotSize;
-
-    private static final String TAG = "MainActivity";
+    private int screenShotInterval;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +66,7 @@ public class MainActivity extends ActionBarActivity {
         mScreenShotTopOffset.setOnSeekBarChangeListener(mSeekBarChangeListener);
         mScreenShotRightOffset.setOnSeekBarChangeListener(mSeekBarChangeListener);
         mScreenShotSize.setOnSeekBarChangeListener(mSeekBarChangeListener);
+        mScreenShotInterval.setOnSeekBarChangeListener(mSeekBarChangeListener);
 
         mServiceStatusView.setOnClickListener(mServiceStatusViewClickListener);
         mServiceStatusView.setOnLongClickListener(mServiceStatusViewLongClickListener);
@@ -110,6 +112,14 @@ public class MainActivity extends ActionBarActivity {
                 );
         mScreenShotSizeValue.setText(Integer.toString(screenShotSize));
         mScreenShotSize.setProgress(screenShotSize);
+
+        screenShotInterval =
+                mSetting.getInt(
+                        MonitorService.SETTING_SCREEN_SHOT_INTERVAL,
+                        MonitorService.DEFAULT_SCREEN_SHOT_INTERVAL
+                );
+        mScreenShotIntervalValue.setText(Integer.toString(screenShotInterval));
+        mScreenShotInterval.setProgress(screenShotInterval);
     }
 
     @Override
@@ -127,6 +137,7 @@ public class MainActivity extends ActionBarActivity {
                 .putInt(MonitorService.SETTING_SCREEN_SHOT_TOP_OFFSET_NAME, screenShotTopOffset)
                 .putInt(MonitorService.SETTING_SCREEN_SHOT_RIGHT_OFFSET_NAME, screenShotRightOffset)
                 .putInt(MonitorService.SETTING_SCREEN_SHOT_SIZE_NAME, screenShotSize)
+                .putInt(MonitorService.SETTING_SCREEN_SHOT_INTERVAL, screenShotInterval)
                 .apply();
     }
 
@@ -192,6 +203,9 @@ public class MainActivity extends ActionBarActivity {
                 case R.id.screenshot_size:
                     changeScreenShotSize(progress);
                     break;
+                case R.id.screenshot_interval:
+                    changeScreenShotInterval(progress);
+                    break;
             }
         }
 
@@ -238,13 +252,24 @@ public class MainActivity extends ActionBarActivity {
 
     private void updateScreenShots(){
         if (mService != null){
-            mService.updateScreenShotsSetting(screenShotTopOffset, screenShotRightOffset, screenShotSize);
+            mService.updateScreenShotsSetting(
+                    screenShotTopOffset,
+                    screenShotRightOffset,
+                    screenShotSize,
+                    screenShotInterval
+            );
         }
     }
 
     private void changeScreenShotSize(int size){
         mScreenShotSizeValue.setText(Integer.toString(size));
         screenShotSize = size;
+        updateScreenShots();
+    }
+
+    private void changeScreenShotInterval(int interval){
+        mScreenShotIntervalValue.setText(Integer.toString(interval));
+        screenShotInterval = interval;
         updateScreenShots();
     }
 }
