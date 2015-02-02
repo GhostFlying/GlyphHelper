@@ -132,7 +132,7 @@ public class MonitorService extends AccessibilityService {
 
     private void showNotification(){
         NotificationCompat.Builder mBuild = new NotificationCompat.Builder(this)
-                .setSmallIcon(R.drawable.ic_warning)
+                .setSmallIcon(R.drawable.ic_settings)
                 .setContentText(getString(R.string.click_to_setting))
                 .setAutoCancel(true);
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
