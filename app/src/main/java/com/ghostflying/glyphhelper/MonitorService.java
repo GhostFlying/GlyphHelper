@@ -41,6 +41,8 @@ public class MonitorService extends AccessibilityService {
     public static final String SETTING_SCREEN_SHOT_RIGHT_OFFSET_NAME = "screenShotRightOffset";
     public static final String SETTING_SCREEN_SHOT_SIZE_NAME = "screenShotSize";
     public static final String SETTING_SCREEN_SHOT_INTERVAL = "screenShotInterval";
+    public static final String SETTING_IS_SHOW = "isShow";
+    public static final String SETTING_AUTO_SCREEN_SHOT = "autoScreenShot";
     public static final String INGRESS_PACKAGE_NAME = "com.nianticproject.ingress";
 
     public static final int DEFAULT_ICON_TOP_OFFSET = 10;
@@ -49,11 +51,8 @@ public class MonitorService extends AccessibilityService {
     public static final int DEFAULT_SCREEN_SHOT_RIGHT_OFFSET = 110;
     public static final int DEFAULT_SCREEN_SHOT_SIZE = 50;
     public static final int DEFAULT_SCREEN_SHOT_INTERVAL = 1200;
-
-    private static final String SETTING_IS_SHOW = "isShow";
-    private static final String SETTING_AUTO_SCREEN_SHOT = "autoScreenShot";
-    private static final boolean DEFAULT_IS_SHOW = true;
-    private static final boolean DEFAULT_AUTO_SCREEN_SHOT = false;
+    public static final boolean DEFAULT_IS_SHOW = true;
+    public static final boolean DEFAULT_AUTO_SCREEN_SHOT = false;
 
     private static final int GLYPH_TIMEOUT_IN_MILLISECONDS = 30000;
     private static final int SCREEN_SHOT_VIBRATE_TIME_IN_MILLISECONDS = 300;
@@ -272,6 +271,11 @@ public class MonitorService extends AccessibilityService {
             mScreenShotsContainerParams.y = screenShotTopOffset;
             mWindowManager.updateViewLayout(mScreenShotsContainer, mScreenShotsContainerParams);
         }
+    }
+
+    public void updateToggleSetting(boolean isShow, boolean isAuto){
+        mIsShow = isShow;
+        mAutoScreenShot = isAuto;
     }
 
     public static MonitorService getSharedInstance() {

@@ -37,12 +37,13 @@
                     android:orientation="vertical"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
+                    
+                    <include layout="@layout/setting_function"/>
 
                     <include layout="@layout/setting_icon_position"/>
 
                     <include layout="@layout/setting_screenshot"/>
 
-                    <include layout="@layout/setting_function"/>
 
                 </LinearLayout>
 

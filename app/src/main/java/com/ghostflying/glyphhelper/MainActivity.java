@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.provider.Settings;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -11,6 +12,8 @@ import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -18,6 +21,7 @@ import android.widget.Toast;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
+import butterknife.Optional;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -37,6 +41,10 @@ public class MainActivity extends ActionBarActivity {
     @InjectView(R.id.screenshot_interval) SeekBar mScreenShotInterval;
     @InjectView(R.id.screenshot_interval_value) TextView mScreenShotIntervalValue;
     @InjectView(R.id.disable_overlay) View mDisableOverlay;
+    @Optional @InjectView(R.id.show_icon) View mShowIconView;
+    @Optional @InjectView(R.id.show_icon_toggle) CheckBox mShowIconToggle;
+    @Optional @InjectView(R.id.auto_shot) View mAutoShotView;
+    @Optional @InjectView(R.id.auto_shot_toggle) CheckBox mAutoShotToggle;
 
     private SharedPreferences mSetting;
     private MonitorService mService;
@@ -46,6 +54,8 @@ public class MainActivity extends ActionBarActivity {
     private int screenShotRightOffset;
     private int screenShotSize;
     private int screenShotInterval;
+    private boolean showIcon;
+    private boolean autoShot;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +80,14 @@ public class MainActivity extends ActionBarActivity {
 
         mServiceStatusView.setOnClickListener(mServiceStatusViewClickListener);
         mServiceStatusView.setOnLongClickListener(mServiceStatusViewLongClickListener);
+
+        // compatibility with 4.0
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN){
+            mShowIconView.setOnClickListener(mViewClickListener);
+            mAutoShotView.setOnClickListener(mViewClickListener);
+            mShowIconToggle.setOnCheckedChangeListener(mCheckBoxChangeListener);
+            mAutoShotToggle.setOnCheckedChangeListener(mCheckBoxChangeListener);
+        }
     }
 
     private void loadSettings() {
@@ -120,6 +138,21 @@ public class MainActivity extends ActionBarActivity {
                 );
         mScreenShotIntervalValue.setText(Integer.toString(screenShotInterval));
         mScreenShotInterval.setProgress(screenShotInterval);
+
+        // compatibility with 4.0
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN){
+            showIcon = mSetting.getBoolean(
+                    MonitorService.SETTING_IS_SHOW,
+                    MonitorService.DEFAULT_IS_SHOW
+            );
+            mShowIconToggle.setChecked(showIcon);
+
+            autoShot = mSetting.getBoolean(
+                    MonitorService.SETTING_AUTO_SCREEN_SHOT,
+                    MonitorService.DEFAULT_AUTO_SCREEN_SHOT
+            );
+            mAutoShotToggle.setChecked(autoShot);
+        }
     }
 
     @Override
@@ -138,6 +171,8 @@ public class MainActivity extends ActionBarActivity {
                 .putInt(MonitorService.SETTING_SCREEN_SHOT_RIGHT_OFFSET_NAME, screenShotRightOffset)
                 .putInt(MonitorService.SETTING_SCREEN_SHOT_SIZE_NAME, screenShotSize)
                 .putInt(MonitorService.SETTING_SCREEN_SHOT_INTERVAL, screenShotInterval)
+                .putBoolean(MonitorService.SETTING_IS_SHOW, showIcon)
+                .putBoolean(MonitorService.SETTING_AUTO_SCREEN_SHOT, autoShot)
                 .apply();
     }
 
@@ -182,6 +217,39 @@ public class MainActivity extends ActionBarActivity {
             mDisableOverlay.setVisibility(View.VISIBLE);
             mServiceStatus.setText(getString(R.string.service_disable));
         }
+    }
+
+    private View.OnClickListener mViewClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()){
+                case R.id.show_icon:
+                    mShowIconToggle.setChecked(!mShowIconToggle.isChecked());
+                    break;
+                case R.id.auto_shot:
+                    mAutoShotToggle.setChecked(!mAutoShotToggle.isChecked());
+                    break;
+            }
+        }
+    };
+
+    private CheckBox.OnCheckedChangeListener mCheckBoxChangeListener = new CompoundButton.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            switch (buttonView.getId()){
+                case R.id.show_icon_toggle:
+                    showIcon = isChecked;
+                    break;
+                case R.id.auto_shot_toggle:
+                    autoShot = isChecked;
+                    break;
+            }
+            updateToggle();
+        }
+    };
+
+    private void updateToggle(){
+        mService.updateToggleSetting(showIcon, autoShot);
     }
 
     private SeekBar.OnSeekBarChangeListener mSeekBarChangeListener = new SeekBar.OnSeekBarChangeListener() {

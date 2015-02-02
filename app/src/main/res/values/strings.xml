@@ -36,4 +36,6 @@
     <string name="setting_function">Function options</string>
     <string name="setting_auto_screenshot_interval">Interval between two shots</string>
     <string name="ms">ms</string>
+    <string name="setting_show_icon">Show icon in ingress</string>
+    <string name="setting_auto_shot">Take screenshots automatically</string>
 </resources>
