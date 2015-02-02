@@ -291,8 +291,11 @@ public class MonitorService extends AccessibilityService {
         public void run() {
             new CaptureTask().execute();
             captureCount--;
-            if (mButton != null && captureCount > 0){
-                mButton.postDelayed(captureRunnable, screenShotInterval);
+            if (mButton != null){
+                if (captureCount > 0)
+                    mButton.postDelayed(captureRunnable, screenShotInterval);
+                else
+                    mButton.setEnabled(true);
             }
         }
     };
@@ -327,34 +330,40 @@ public class MonitorService extends AccessibilityService {
         if (mButton == null){
             mButton = new ImageView(this);
             mButton.setImageResource(R.drawable.ic_launcher);
-            mButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Log.d("sss", Long.toString(new Date().getTime()));
-                    mVibrator.vibrate(SCREEN_SHOT_VIBRATE_TIME_IN_MILLISECONDS);
-                    new CaptureTask().execute();
-                    if (isAutoScreenShot() && captureCount == 0){
-                        captureCount = 4;
-                        v.postDelayed(captureRunnable, screenShotInterval);
-                    }
-                }
-            });
-            mButton.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    if (!existScreenShots.isEmpty()) {
-                        removeScreenShots();
-                        v.removeCallbacks(timeOutRunnable);
-                        return true;
-                    }
-                    return false;
-                }
-            });
+            mButton.setOnClickListener(mButtonClickListener);
+            mButton.setOnLongClickListener(mButtonLongClickListener);
             if (mButtonParams == null)
                 mButtonParams = getLayoutParams(iconTopOffset, iconRightOffset);
             mWindowManager.addView(mButton, mButtonParams);
         }
     }
+
+    private View.OnClickListener mButtonClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            mVibrator.vibrate(SCREEN_SHOT_VIBRATE_TIME_IN_MILLISECONDS);
+            if (isAutoScreenShot()){
+                captureCount = 5;
+                v.setEnabled(false);
+                captureRunnable.run();
+            }
+            else {
+                new CaptureTask().execute();
+            }
+        }
+    };
+
+    private View.OnLongClickListener mButtonLongClickListener = new View.OnLongClickListener() {
+        @Override
+        public boolean onLongClick(View v) {
+            if (!existScreenShots.isEmpty()) {
+                removeScreenShots();
+                v.removeCallbacks(timeOutRunnable);
+                return true;
+            }
+            return false;
+        }
+    };
 
     private WindowManager.LayoutParams getLayoutParams(int topOffset, int rightOffset) {
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
