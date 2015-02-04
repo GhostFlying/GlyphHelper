@@ -133,6 +133,7 @@ public class MonitorService extends AccessibilityService {
         NotificationCompat.Builder mBuild = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.ic_settings)
                 .setContentText(getString(R.string.click_to_setting))
+                .setStyle(new NotificationCompat.BigTextStyle())
                 .setAutoCancel(true);
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
         Intent settingIntent = new Intent(this, MainActivity.class);
@@ -462,7 +463,7 @@ public class MonitorService extends AccessibilityService {
             }
             while (!isFirst){
                 try {
-                    Thread.sleep(200);
+                    Thread.sleep(500);
                 }
                 catch (Exception e){
                     e.printStackTrace();
