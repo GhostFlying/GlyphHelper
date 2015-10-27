@@ -4,4 +4,5 @@
     <string name="app_name">GlyphHelper</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_main">@string/app_name</string>
+    <string name="projection_permission_failed">You should grant the permission for the app.</string>
 </resources>
