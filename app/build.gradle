@@ -9,12 +9,12 @@ android {
             storePassword KEYSTORE_PASSWORD
         }
     }
-    compileSdkVersion 21
-    buildToolsVersion "21.1.2"
+    compileSdkVersion 23
+    buildToolsVersion "23.0.1"
     defaultConfig {
         applicationId "com.ghostflying.glyphhelper"
-        minSdkVersion 15
-        targetSdkVersion 21
+        minSdkVersion 21
+        targetSdkVersion 23
         versionCode 4
         versionName "1.2.1"
     }
@@ -32,6 +32,6 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:appcompat-v7:21.0.3'
-    compile 'com.jakewharton:butterknife:6.1.0'
+    compile 'com.android.support:appcompat-v7:23.+'
+    compile 'com.jakewharton:butterknife:7.0.1'
 }
