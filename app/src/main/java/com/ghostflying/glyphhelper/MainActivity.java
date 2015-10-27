@@ -1,16 +1,14 @@
 package com.ghostflying.glyphhelper;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.provider.Settings;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.support.annotation.Nullable;
+import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -18,33 +16,31 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import butterknife.Bind;
 import butterknife.ButterKnife;
-import butterknife.InjectView;
-import butterknife.OnClick;
-import butterknife.Optional;
 
 
 public class MainActivity extends ActionBarActivity {
-    @InjectView(R.id.toolbar) Toolbar mToolbar;
-    @InjectView(R.id.service_status_view) View mServiceStatusView;
-    @InjectView(R.id.service_status) TextView mServiceStatus;
-    @InjectView(R.id.icon_top_offset) SeekBar mIconTopOffset;
-    @InjectView(R.id.icon_top_offset_value) TextView mIconTopOffsetValue;
-    @InjectView(R.id.icon_right_offset) SeekBar mIconRightOffset;
-    @InjectView(R.id.icon_right_offset_value) TextView mIconRightOffsetValue;
-    @InjectView(R.id.screenshot_top_offset) SeekBar mScreenShotTopOffset;
-    @InjectView(R.id.screenshot_top_offset_value) TextView mScreenShotTopOffsetValue;
-    @InjectView(R.id.screenshot_right_offset) SeekBar mScreenShotRightOffset;
-    @InjectView(R.id.screenshot_right_offset_value) TextView mScreenShotRightOffsetValue;
-    @InjectView(R.id.screenshot_size) SeekBar mScreenShotSize;
-    @InjectView(R.id.screenshot_size_value) TextView mScreenShotSizeValue;
-    @InjectView(R.id.screenshot_interval) SeekBar mScreenShotInterval;
-    @InjectView(R.id.screenshot_interval_value) TextView mScreenShotIntervalValue;
-    @InjectView(R.id.disable_overlay) View mDisableOverlay;
-    @Optional @InjectView(R.id.show_icon) View mShowIconView;
-    @Optional @InjectView(R.id.show_icon_toggle) CheckBox mShowIconToggle;
-    @Optional @InjectView(R.id.auto_shot) View mAutoShotView;
-    @Optional @InjectView(R.id.auto_shot_toggle) CheckBox mAutoShotToggle;
+    @Bind(R.id.toolbar) Toolbar mToolbar;
+    @Bind(R.id.service_status_view) View mServiceStatusView;
+    @Bind(R.id.service_status) TextView mServiceStatus;
+    @Bind(R.id.icon_top_offset) SeekBar mIconTopOffset;
+    @Bind(R.id.icon_top_offset_value) TextView mIconTopOffsetValue;
+    @Bind(R.id.icon_right_offset) SeekBar mIconRightOffset;
+    @Bind(R.id.icon_right_offset_value) TextView mIconRightOffsetValue;
+    @Bind(R.id.screenshot_top_offset) SeekBar mScreenShotTopOffset;
+    @Bind(R.id.screenshot_top_offset_value) TextView mScreenShotTopOffsetValue;
+    @Bind(R.id.screenshot_right_offset) SeekBar mScreenShotRightOffset;
+    @Bind(R.id.screenshot_right_offset_value) TextView mScreenShotRightOffsetValue;
+    @Bind(R.id.screenshot_size) SeekBar mScreenShotSize;
+    @Bind(R.id.screenshot_size_value) TextView mScreenShotSizeValue;
+    @Bind(R.id.screenshot_interval) SeekBar mScreenShotInterval;
+    @Bind(R.id.screenshot_interval_value) TextView mScreenShotIntervalValue;
+    @Bind(R.id.disable_overlay) View mDisableOverlay;
+    @Nullable @Bind(R.id.show_icon) View mShowIconView;
+    @Nullable @Bind(R.id.show_icon_toggle) CheckBox mShowIconToggle;
+    @Nullable @Bind(R.id.auto_shot) View mAutoShotView;
+    @Nullable @Bind(R.id.auto_shot_toggle) CheckBox mAutoShotToggle;
 
     private SharedPreferences mSetting;
     private MonitorService mService;
@@ -61,7 +57,7 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ButterKnife.inject(this);
+        ButterKnife.bind(this);
         setSupportActionBar(mToolbar);
         initViews();
     }
@@ -80,14 +76,6 @@ public class MainActivity extends ActionBarActivity {
 
         mServiceStatusView.setOnClickListener(mServiceStatusViewClickListener);
         mServiceStatusView.setOnLongClickListener(mServiceStatusViewLongClickListener);
-
-        // compatibility with 4.0
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN){
-            mShowIconView.setOnClickListener(mViewClickListener);
-            mAutoShotView.setOnClickListener(mViewClickListener);
-            mShowIconToggle.setOnCheckedChangeListener(mCheckBoxChangeListener);
-            mAutoShotToggle.setOnCheckedChangeListener(mCheckBoxChangeListener);
-        }
     }
 
     private void loadSettings() {
