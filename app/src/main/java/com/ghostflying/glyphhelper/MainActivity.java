@@ -1,22 +1,21 @@
 package com.ghostflying.glyphhelper;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.graphics.Bitmap;
-import android.graphics.PixelFormat;
-import android.graphics.Point;
-import android.hardware.display.DisplayManager;
 import android.media.Image;
 import android.media.ImageReader;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
-import android.view.Display;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -67,23 +66,28 @@ public class MainActivity extends AppCompatActivity {
             }
 
             mMediaProjection = mProjectionManager.getMediaProjection(resultCode, data);
-
-            DisplayMetrics metrics = getResources().getDisplayMetrics();
-            int density = metrics.densityDpi;
-            int flags = DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR;
-            Display display = getWindowManager().getDefaultDisplay();
-            Point size = new Point();
-            display.getSize(size);
-            mWidth = size.x;
-            mHeight = size.y;
-
-            mImageReader = ImageReader.newInstance(mWidth, mHeight, PixelFormat.RGBA_8888, 1);
-            mImageReader.setOnImageAvailableListener(mOnImageAvailableListener, null);
+            Intent serviceIntent = new Intent(this, ScreenCapService.class);
+            startService(serviceIntent);
+            bindService(serviceIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
 
 
-            mMediaProjection.createVirtualDisplay("screen_cap", mWidth, mHeight, density, flags, mImageReader.getSurface(), null, null);
+            //mMediaProjection.createVirtualDisplay("screen_cap", mWidth, mHeight, density, flags, mImageReader.getSurface(), null, null);
         }
     }
+
+    private ServiceConnection mServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            ScreenCapService.ScreenCapBinder mBinder = (ScreenCapService.ScreenCapBinder)service;
+            DisplayMetrics metrics = getResources().getDisplayMetrics();
+            mBinder.setMediaProjection(mMediaProjection, metrics.densityDpi, 720, 1280);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    };
 
     private ImageReader.OnImageAvailableListener mOnImageAvailableListener = new ImageReader.OnImageAvailableListener() {
         @Override
